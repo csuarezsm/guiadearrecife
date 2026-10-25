@@ -154,7 +154,7 @@ UI = {
  "ag_eb": ("Qué hacer en Lanzarote y La Graciosa", "Things to do in Lanzarote and La Graciosa"),
  "ag_intro": ("Conciertos, charlas, teatro, fiestas, deporte y mercadillos en Arrecife y en toda la isla. Comprueba siempre horarios y entradas en la fuente antes de ir.",
               "Concerts, talks, theatre, fiestas, sport and markets in Arrecife and around the island. Always check times and tickets with the source before you go."),
- "ag_filtro": ("Filtrar por municipio", "Filter by area"), "ag_todas": ("Toda la isla", "Whole island"),
+ "ag_filtro": ("Filtrar por municipio", "Filter by area"), "ag_todas": ("Todos", "All"),
  "ag_vacio": ("No hay actos apuntados para los próximos días. Si organizas algo, escríbenos y lo añadimos.",
               "Nothing listed for the coming days yet. If you're organising something, get in touch and we'll add it."),
  "ag_none": ("No hay actos en este municipio en los próximos días.", "Nothing listed in this area for the coming days."),
@@ -1004,8 +1004,9 @@ def build_agenda(agenda, hoy):
 var d=new Date(),today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 function apply(f){{var shown=0;evs.forEach(function(e){{var ok=(!f||e.dataset.muni===f||e.dataset.muni==='toda-la-isla')&&e.dataset.fin>=today;e.hidden=!ok;if(ok)shown++;}});
 days.forEach(function(x){{x.hidden=!x.querySelector('.ev:not([hidden])');}});none.hidden=shown>0||!evs.length;}}
-bs.forEach(function(b){{b.addEventListener('click',function(){{bs.forEach(function(x){{x.classList.remove('is-on');x.setAttribute('aria-pressed','false');}});b.classList.add('is-on');b.setAttribute('aria-pressed','true');apply(b.dataset.f);}});}});
-apply('');}})();
+function pick(f){{var b=null;bs.forEach(function(x){{var on=x.dataset.f===f;x.classList.toggle('is-on',on);x.setAttribute('aria-pressed',on?'true':'false');if(on)b=x;}});if(!b){{f='';bs[0].classList.add('is-on');bs[0].setAttribute('aria-pressed','true');}}apply(f);}}
+bs.forEach(function(b){{b.addEventListener('click',function(){{pick(b.dataset.f);try{{history.replaceState(null,'',b.dataset.f?'#'+b.dataset.f:location.pathname+location.search);}}catch(e){{}}}});}});
+pick(decodeURIComponent(location.hash.slice(1)));}})();
 </script>"""
     return page(title=t("agenda"), path=path, alt=alt, body=body, description=t("ag_intro"))
 

@@ -18,6 +18,7 @@
   --band:#151916;--picon:#0a0c0b;--picon-fg:#e8ebe7;--picon-muted:#8d968f;color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--picon)}
 a{color:inherit}
