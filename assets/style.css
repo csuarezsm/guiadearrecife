@@ -239,6 +239,9 @@ main{padding-bottom:0}
 .ev-desc{margin:6px 0 0;color:var(--muted);font-size:.98rem;max-width:66ch}
 .ev-meta{margin:6px 0 0;font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
 .ev-meta a{color:var(--verde)}
+.ev-cal{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:12px 0 0}
+.btn-sm{display:inline-flex;align-items:center;gap:8px;font-size:.84rem;padding:7px 14px}
+.ev-gcal{font-family:var(--f-display);font-weight:650;font-size:.84rem;color:var(--verde);text-underline-offset:3px}
 
 /* Directorio */
 .biz-empty{max-width:760px;padding:28px;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--verde)}

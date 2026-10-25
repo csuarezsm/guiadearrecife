@@ -22,7 +22,9 @@ import re
 import shutil
 import sys
 import unicodedata
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
+from urllib.parse import urlencode
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -118,7 +120,8 @@ UI = {
  "cib_s": ("Alertas y parches que afectan a empresas y administraciones de las islas", "Alerts and patches affecting businesses and public bodies in the islands"),
  "cib_all": ("Todas las alertas", "All alerts"), "nivel": ("Nivel {x}", "{x} level"), "que_hacer": ("Qué hacer", "What to do"),
  "ag_s": ("Qué hacer estos días en Arrecife y en toda la isla", "Things to do in Arrecife and around the island"),
- "ag_all": ("Toda la agenda", "Full listings"), "hasta": ("Hasta el {d}", "Until {d}"),
+ "ag_all": ("Toda la agenda", "Full listings"),
+ "cal_add": ("Añadir al calendario", "Add to calendar"), "cal_google": ("Google Calendar", "Google Calendar"), "hasta": ("Hasta el {d}", "Until {d}"),
  "biz_k": ("Negocios de Arrecife", "Arrecife businesses"),
  "biz_h": ("Dónde comer, comprar y encontrar un profesional en la capital", "Where to eat, shop and find a professional in the capital"),
  "biz_p": ("Estamos preparando el directorio de comercios, bares, restaurantes y empresas de Arrecife. Aparecer será gratis.",
@@ -602,6 +605,66 @@ def ev_card(e, hoy):
             f'</div></article>')
 
 
+def ev_horario(e):
+    """(inicio, fin) en UTC si la hora es concreta (dos horas por defecto); None si es de día completo."""
+    m = re.match(r"\s*(\d{1,2})[:.](\d{2})", str(e.get("hora", "")))
+    if not m or e["fin"] != e["ini"]:
+        return None
+    ini = datetime(e["ini"].year, e["ini"].month, e["ini"].day, int(m[1]), int(m[2]), tzinfo=ZoneInfo("Atlantic/Canary"))
+    return ini.astimezone(timezone.utc), (ini + timedelta(hours=2)).astimezone(timezone.utc)
+
+
+def ev_detalles(e):
+    partes = [F(e, "descripcion"), F(e, "hora") if not ev_horario(e) else "", F(e, "precio"), e.get("fuente_url", "")]
+    return "\n\n".join(x for x in partes if x)
+
+
+def ev_lugar(e):
+    return f'{F(e, "lugar")}, {muni_name(e.get("municipio", ""))}, Lanzarote'
+
+
+def ev_ics(e):
+    def txt(v):
+        return str(v).replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+
+    def fold(line):
+        out, b = [], line.encode("utf-8")
+        while len(b) > 75:
+            cut = 75 if not out else 74
+            while (b[cut] & 0xC0) == 0x80:
+                cut -= 1
+            out.append(b[:cut].decode("utf-8"))
+            b = b[cut:]
+        out.append(b.decode("utf-8"))
+        return "\r\n ".join(out)
+
+    h = ev_horario(e)
+    if h:
+        cuando = [f"DTSTART:{h[0]:%Y%m%dT%H%M%SZ}", f"DTEND:{h[1]:%Y%m%dT%H%M%SZ}"]
+    else:
+        cuando = [f"DTSTART;VALUE=DATE:{e['ini']:%Y%m%d}", f"DTEND;VALUE=DATE:{e['fin'] + timedelta(days=1):%Y%m%d}"]
+    lineas = ["BEGIN:VCALENDAR", "VERSION:2.0", f"PRODID:-//{SITE_NAME}//Agenda//{LANG[0].upper()}", "CALSCALE:GREGORIAN",
+              "METHOD:PUBLISH", "BEGIN:VEVENT", f"UID:{e['slug']}@guiadearrecife.es",
+              f"DTSTAMP:{HOY[0]:%Y%m%d}T070000Z", *cuando, f"SUMMARY:{txt(F(e, 'titulo'))}",
+              f"LOCATION:{txt(ev_lugar(e))}", f"DESCRIPTION:{txt(ev_detalles(e))}"]
+    if e.get("fuente_url"):
+        lineas.append(f"URL:{e['fuente_url']}")
+    lineas += ["END:VEVENT", "END:VCALENDAR"]
+    return "\r\n".join(fold(x) for x in lineas) + "\r\n"
+
+
+def ev_google(e):
+    h = ev_horario(e)
+    fechas = (f"{h[0]:%Y%m%dT%H%M%SZ}/{h[1]:%Y%m%dT%H%M%SZ}" if h
+              else f"{e['ini']:%Y%m%d}/{e['fin'] + timedelta(days=1):%Y%m%d}")
+    return "https://calendar.google.com/calendar/render?" + urlencode(
+        {"action": "TEMPLATE", "text": F(e, "titulo"), "dates": fechas, "details": ev_detalles(e), "location": ev_lugar(e)})
+
+
+def ev_ics_path(e):
+    return R("agenda") + f"ics/{e['slug']}.ics"
+
+
 def evento_html(e, L):
     fuente = (f'<a href="{esc(e["fuente_url"])}" rel="noopener" target="_blank">{esc(e["fuente_nombre"])}</a>'
               if e.get("fuente_url") else "")
@@ -611,7 +674,11 @@ def evento_html(e, L):
             f'<h3>{esc(F(e, "titulo"))}</h3><p class="ev-place">{esc(F(e, "lugar"))} · '
             f'<a href="{L(R("municipio", e.get("municipio", "Toda la isla")))}">{esc(muni_name(e.get("municipio", "")))}</a></p>'
             f'<p class="ev-desc">{esc(F(e, "descripcion"))}</p>'
-            f'<p class="ev-meta">{esc(F(e, "precio"))}{" · " + t("fuente") + ": " + fuente if fuente else ""}</p></div></article>')
+            f'<p class="ev-meta">{esc(F(e, "precio"))}{" · " + t("fuente") + ": " + fuente if fuente else ""}</p>'
+            f'<p class="ev-cal"><a class="btn btn-ghost btn-sm" href="{L.file(ev_ics_path(e))}" download="{esc(e["slug"])}.ics">'
+            f'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>'
+            f'<path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>{t("cal_add")}</a>'
+            f'<a class="ev-gcal" href="{esc(ev_google(e))}" rel="noopener" target="_blank">{t("cal_google")}</a></p></div></article>')
 
 
 def band(title, sub, inner, cls="", more=""):
@@ -999,6 +1066,9 @@ def build_lang(noticias, dias, agenda, negocios, hoy):
 
     put(R("home"), build_home(noticias, dias, agenda, negocios))
     put(R("agenda"), build_agenda(agenda, hoy))
+    for e in agenda:
+        if e["fin"] >= hoy:
+            write(ev_ics_path(e), ev_ics(e))
     put(R("negocios"), build_negocios(negocios))
     for n in noticias:
         put(R("noticia", n), build_noticia(n, noticias, agenda))
