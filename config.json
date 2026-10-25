@@ -1,0 +1,4 @@
+{
+  "modo": "revision",
+  "_explicacion": "revision = la tarea abre una propuesta (pull request) y Carlos la aprueba; automatico = publica directamente y cada noticia lleva un aviso breve de IA (art. 50.4 del Reglamento europeo de IA)."
+}
