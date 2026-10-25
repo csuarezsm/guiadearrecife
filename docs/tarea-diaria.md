@@ -35,6 +35,8 @@ Si una web no se puede leer, sigue con las demás; no uses métodos alternativos
 - `ciber`: 0 a 2 alertas de ciberseguridad relevantes, con su nivel (Crítico, Alto, Medio).
 - `redes`: 0 a 3 temas virales contados por medios.
 - Agenda: todos los actos públicos que encuentres de HOY en adelante (como mínimo el próximo mes completo, más los posteriores ya anunciados), en cualquier municipio y sin límite de número, siempre con fecha, lugar y fuente comprobables. Mira antes lo que ya hay en `content/agenda/`: no dupliques un acto (mismo acto y fecha aunque el título cambie un poco) y, si uno ha cambiado de fecha, hora o lugar, corrige su archivo. Una fiesta con varios actos puede ir como un solo acto de varios días (`fecha_fin`) o separar los actos principales. Descarta actos privados o sin fecha clara.
+  - Fechas: si un acto dura varios días (festival, exposición, fiestas, ciclo, mercado periódico…), pon SIEMPRE `fecha` = primer día y `fecha_fin` = último día, aunque haya empezado antes de HOY. Nunca pongas solo el día de hoy o solo el final.
+  - Foto: si la ficha oficial del acto (organizador, Cabildo/Cultura Lanzarote, CACT, ayuntamiento, Cooltura, web de entradas) trae foto o cartel, descárgala con `curl -sSL -o img/agenda/<nombre del .md sin extensión>.<jpg|png|webp> "<url de la imagen>"` (esta descarga sí está permitida), comprueba con `file` que es una imagen y que pesa menos de 1,5 MB (si pesa más, busca en la ficha una versión más pequeña) y añade `imagen: img/agenda/…` y `credito: Foto: <fuente>`. No uses fotos de medios de comunicación. Si no hay foto, no pongas el campo.
 Si varias fuentes cuentan lo mismo, es una sola noticia con varias fuentes.
 
 ## 4. Escribir los archivos
@@ -98,6 +100,8 @@ precio_en: Free
 descripcion: Una o dos frases.
 descripcion_en: One or two sentences.
 fuente: Medio | https://url
+imagen: img/agenda/AAAA-MM-DD-titulo-corto.jpg   (solo si el acto trae foto)
+credito: Foto: Cultura Lanzarote                (solo si hay imagen)
 ---
 ```
 
@@ -105,8 +109,8 @@ fuente: Medio | https://url
 1. `python3 scripts/validar.py` — si da errores, corrígelos y vuelve a ejecutarlo (máximo 3 intentos). Si no consigues dejarlo sin errores, NO publiques: avisa a Carlos con PushNotification explicando el problema.
 2. `python3 build.py` — debe terminar con "OK".
 3. Publicar:
-   - Modo `revision`: `git checkout -b edicion-HOY`, `git add content && git commit -m "Edición HOY"`, `git push -u origin edicion-HOY` y abre una propuesta con `gh pr create --title "Edición HOY" --body "<lista de titulares>"`.
-   - Modo `automatico`: `git add content && git commit -m "Edición HOY"` y `git push origin main`. Si el push falla por cambios remotos, haz `git pull --rebase` y repite.
+   - Modo `revision`: `git checkout -b edicion-HOY`, `git add content img && git commit -m "Edición HOY"`, `git push -u origin edicion-HOY` y abre una propuesta con `gh pr create --title "Edición HOY" --body "<lista de titulares>"`.
+   - Modo `automatico`: `git add content img && git commit -m "Edición HOY"` y `git push origin main`. Si el push falla por cambios remotos, haz `git pull --rebase` y repite.
 4. Avisa a Carlos con PushNotification:
    - Modo revisión: "Edición de HOY lista para revisar: N noticias y M actos nuevos en la agenda. Titular principal: …" y el enlace a la propuesta.
    - Modo automático: "Edición de HOY publicada: N noticias y M actos nuevos en la agenda. Titular principal: …" y el enlace https://guiadearrecife.es/.
