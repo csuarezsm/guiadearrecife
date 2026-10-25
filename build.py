@@ -74,7 +74,8 @@ MUNI_EN = {"Toda la isla": "Island-wide"}
 CAT_EN = {"Patrimonio y naturaleza": "Heritage & nature", "Humor": "Comedy", "Danza": "Dance",
           "Charlas": "Talks", "Literatura": "Literature", "Música": "Music", "Teatro": "Theatre",
           "Fiestas": "Fiestas", "Deporte": "Sport", "Mercadillos": "Markets", "Cine": "Film",
-          "Familiar": "Family", "Gastronomía": "Food & drink", "Actos": "Events"}
+          "Familiar": "Family", "Gastronomía": "Food & drink", "Actos": "Events",
+          "Exposiciones": "Exhibitions", "Talleres": "Workshops", "Ferias": "Fairs"}
 NIVEL_EN = {"Crítico": "Critical", "Alto": "High", "Medio": "Medium", "Bajo": "Low", "informativo": "Info"}
 
 MESES = {"es": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
@@ -175,7 +176,7 @@ UI = {
  "sobre_eb": ("Sobre el portal", "About"), "sobre_h": ("Qué es Guía de Arrecife", "What is Guía de Arrecife"),
 }
 SOBRE = {
- "es": """<p>Guía de Arrecife es un resumen diario de la actualidad de Lanzarote y La Graciosa. Cada mañana revisamos lo que publican los medios digitales de la isla y las notas de prensa del Cabildo y de los siete ayuntamientos, y elegimos las diez noticias que más importan a quien vive y trabaja aquí: política insular y municipal, vivienda, empleo, servicios públicos, tráfico, turismo, medio ambiente y sucesos relevantes. Además, recogemos lo que interesa a las empresas y pymes, con las novedades de la Cámara de Comercio y de las asociaciones empresariales de la isla, las alertas de ciberseguridad, lo que se comenta en redes y la agenda de actos de toda la isla.</p>
+ "es": """<p>Guía de Arrecife es un resumen diario de la actualidad de Lanzarote y La Graciosa. Cada mañana revisamos lo que publican los medios digitales de la isla y las notas de prensa del Cabildo y de los siete ayuntamientos, y elegimos las noticias que más importan a quien vive y trabaja aquí: política insular y municipal, vivienda, empleo, servicios públicos, tráfico, turismo, medio ambiente y sucesos relevantes. Además, recogemos lo que interesa a las empresas y pymes, con las novedades de la Cámara de Comercio y de las asociaciones empresariales de la isla, las alertas de ciberseguridad, lo que se comenta en redes y la agenda de actos de toda la isla.</p>
 <p>En el bloque de redes solo incluimos temas virales que ya haya contado algún medio. No publicamos rumores ni contenidos que expongan a particulares.</p>
 <p>Cada noticia se cuenta con palabras propias, en pocas líneas, y siempre enlaza a los medios que la publicaron. No copiamos textos ni fotografías: las ilustraciones de portada son propias. Si quieres la información completa, el sitio para leerla es la fuente original.</p>
 <h2>En dos idiomas</h2><p>Toda la información está en español y en inglés, para que también puedan seguirla los residentes y visitantes que no hablan español.</p>
@@ -184,7 +185,7 @@ SOBRE = {
 <p>La selección, la redacción y la traducción de los resúmenes se hacen con ayuda de inteligencia artificial y siguiendo siempre los mismos criterios: nada de contenido patrocinado ni rumores, una sola entrada cuando varios medios cuentan lo mismo, y aviso expreso cuando un dato no está confirmado.</p>
 <h2>Correcciones</h2>
 <p>Si ves un error en un resumen o eres el medio citado y quieres que cambiemos algo, escríbenos y lo revisaremos lo antes posible.</p>""",
- "en": """<p>Guía de Arrecife is a daily round-up of the news in Lanzarote and La Graciosa. Every morning we go through what the island's online media publish, plus press releases from the Cabildo and the seven town councils, and pick the ten stories that matter most to people who live and work here: island and local politics, housing, jobs, public services, traffic, tourism, the environment and significant incidents. We also cover what matters to businesses and SMEs, including news from the Chamber of Commerce and the island's business associations, cybersecurity alerts, what's trending on social media, and what's on across the island.</p>
+ "en": """<p>Guía de Arrecife is a daily round-up of the news in Lanzarote and La Graciosa. Every morning we go through what the island's online media publish, plus press releases from the Cabildo and the seven town councils, and pick the stories that matter most to people who live and work here: island and local politics, housing, jobs, public services, traffic, tourism, the environment and significant incidents. We also cover what matters to businesses and SMEs, including news from the Chamber of Commerce and the island's business associations, cybersecurity alerts, what's trending on social media, and what's on across the island.</p>
 <p>In the social media section we only include viral stories that a news outlet has already reported. We don't publish rumours or content that exposes private individuals.</p>
 <p>Each story is told in our own words, in a few lines, and always links to the outlets that published it. We don't copy text or photos: the cover illustrations are our own. For the full story, the place to read it is the original source, which is usually in Spanish.</p>
 <h2>In two languages</h2><p>Everything is published in Spanish and English, so residents and visitors who don't speak Spanish can follow island news too.</p>

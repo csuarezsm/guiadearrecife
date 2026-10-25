@@ -26,14 +26,15 @@ Con WebSearch y WebFetch, revisa lo publicado en las últimas 24 horas (descarta
 - Pymes y normativa: BOE, BOC, Agencia Tributaria, Seguridad Social y prensa económica, solo lo que afecte a autónomos y pymes de Canarias.
 - Ciberseguridad: avisos de INCIBE-CERT y CCN-CERT que afecten a empresas o administraciones (productos muy usados por pymes).
 - Redes: lo viral sobre la isla solo si lo ha contado un medio. No entres en X, TikTok, Instagram ni Facebook.
+- Agenda (búsqueda propia, no te quedes con los actos que salgan en las noticias): busca TODOS los actos públicos de los próximos 60 días en toda la isla y La Graciosa: conciertos, teatro, humor, danza, cine, exposiciones, presentaciones de libros, charlas, talleres, fiestas patronales y populares, romerías, verbenas, carnavales, ferias, mercadillos, actividades familiares e infantiles, gastronomía, deporte popular (carreras, travesías, torneos) y visitas guiadas. Revisa al menos: agenda del Cabildo (https://www.cabildodelanzarote.com/agenda), Cultura Lanzarote (https://culturalanzarote.com/programacion_cultura/), Centros de Arte, Cultura y Turismo (CACT), las agendas y concejalías de cultura y festejos de los siete ayuntamientos, Turismo Lanzarote (https://turismolanzarote.com/en/events-calendar/), OcioLanzarote (https://ociolanzarote.com/en/events), Cooltura Lanzarote (https://www.coolturalanzarote.com), Tomaticket (https://www.tomaticket.es/entradas/lanzarote) y las agendas semanales de ocio de los medios. Completa con búsquedas como "agenda cultural Lanzarote [mes] [año]", "conciertos Lanzarote [mes]" y "fiestas [municipio] [año]".
 Si una web no se puede leer, sigue con las demás; no uses métodos alternativos de descarga. Lee los artículos completos.
 
 ## 3. Seleccionar
-- `diez`: las 10 noticias más importantes del día para quien vive y trabaja en la isla, ordenadas (orden 1 a 10). Si hay menos de 10 con interés real, pon las que haya: no rellenes.
+- `diez` (el nombre es histórico, no hay número fijo): todas las noticias del día con interés real para quien vive y trabaja en la isla, ordenadas por importancia (orden 1, 2, 3…). Pon tantas como haya: un día flojo pueden ser pocas y un día movido muchas. No rellenes con noticias menores ni dejes fuera noticias importantes por llegar a una cifra.
 - `empresas`: 2 a 4 novedades de empresas, asociaciones y normativa para pymes (secciones Empresas o Pymes y normativa).
 - `ciber`: 0 a 2 alertas de ciberseguridad relevantes, con su nivel (Crítico, Alto, Medio).
 - `redes`: 0 a 3 temas virales contados por medios.
-- Agenda: actos nuevos anunciados para los próximos 60 días (con fecha, lugar y fuente). No dupliques actos que ya estén en `content/agenda/` (mismo título y fecha).
+- Agenda: todos los actos públicos que encuentres para los próximos 60 días, en cualquier municipio y sin límite de número, siempre con fecha, lugar y fuente comprobables. Mira antes lo que ya hay en `content/agenda/`: no dupliques un acto (mismo acto y fecha aunque el título cambie un poco) y, si uno ha cambiado de fecha, hora o lugar, corrige su archivo. Una fiesta con varios actos puede ir como un solo acto de varios días (`fecha_fin`) o separar los actos principales. Descarta actos privados o sin fecha clara.
 Si varias fuentes cuentan lo mismo, es una sola noticia con varias fuentes.
 
 ## 4. Escribir los archivos
@@ -72,7 +73,7 @@ The same three paragraphs in natural British English (not a literal translation)
 fecha: HOY
 saludo: Buenos días, esto es lo que se cuece hoy en Lanzarote.
 saludo_en: Good morning, here's what's happening in Lanzarote today.
-nota: (opcional) aviso breve, p. ej. si hay menos noticias de lo normal.
+nota: (opcional) aviso breve, p. ej. si es un día con pocas noticias.
 nota_en: (optional) the same in English.
 tema: Una frase sobre el tema del día.
 tema_en: The same in English.
@@ -91,7 +92,7 @@ hora_en: 7.30pm
 lugar: Sitio, localidad
 lugar_en: Place, town
 municipio: Arrecife
-categoria: Música        (Música, Teatro, Humor, Danza, Cine, Literatura, Charlas, Fiestas, Deporte, Mercadillos, Familiar, Gastronomía, Patrimonio y naturaleza)
+categoria: Música        (Música, Teatro, Humor, Danza, Cine, Exposiciones, Literatura, Charlas, Talleres, Fiestas, Ferias, Deporte, Mercadillos, Familiar, Gastronomía, Patrimonio y naturaleza)
 precio: Gratis
 precio_en: Free
 descripcion: Una o dos frases.
@@ -107,6 +108,6 @@ fuente: Medio | https://url
    - Modo `revision`: `git checkout -b edicion-HOY`, `git add content && git commit -m "Edición HOY"`, `git push -u origin edicion-HOY` y abre una propuesta con `gh pr create --title "Edición HOY" --body "<lista de titulares>"`.
    - Modo `automatico`: `git add content && git commit -m "Edición HOY"` y `git push origin main`. Si el push falla por cambios remotos, haz `git pull --rebase` y repite.
 4. Avisa a Carlos con PushNotification:
-   - Modo revisión: "Edición de HOY lista para revisar: N noticias. Titular principal: …" y el enlace a la propuesta.
-   - Modo automático: "Edición de HOY publicada: N noticias. Titular principal: …" y el enlace https://guiadearrecife.es/.
+   - Modo revisión: "Edición de HOY lista para revisar: N noticias y M actos nuevos en la agenda. Titular principal: …" y el enlace a la propuesta.
+   - Modo automático: "Edición de HOY publicada: N noticias y M actos nuevos en la agenda. Titular principal: …" y el enlace https://guiadearrecife.es/.
    Si algo ha fallado (una fuente bloqueada, pocas noticias), dilo en una línea.
