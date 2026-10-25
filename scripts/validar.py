@@ -94,6 +94,16 @@ for p in sorted((ROOT / "content" / "agenda").glob("*.md")):
             err(p.name, f"falta el campo '{k}' en la agenda")
     if meta.get("municipio") and meta["municipio"] not in MUNICIPIOS:
         err(p.name, f"municipio desconocido '{meta['municipio']}'")
+    if meta.get("fecha_fin") and meta.get("fecha") and str(meta["fecha_fin"]) < str(meta["fecha"]):
+        err(p.name, "fecha_fin es anterior a fecha")
+    if meta.get("imagen"):
+        img = ROOT / meta["imagen"]
+        if not str(meta["imagen"]).startswith("img/agenda/") or img.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp"):
+            err(p.name, "imagen debe estar en img/agenda/ y ser .jpg, .png o .webp")
+        elif not img.exists():
+            err(p.name, f"no existe la imagen {meta['imagen']}")
+        elif img.stat().st_size > 1_500_000:
+            warn(p.name, f"imagen de {img.stat().st_size // 1024} KB: conviene que pese menos de 1,5 MB")
 
 for p in sorted((ROOT / "content" / "dias").glob("*.md")):
     meta, _ = parse_file(p)

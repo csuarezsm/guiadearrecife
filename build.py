@@ -122,7 +122,7 @@ UI = {
  "cib_all": ("Todas las alertas", "All alerts"), "nivel": ("Nivel {x}", "{x} level"), "que_hacer": ("Qué hacer", "What to do"),
  "ag_s": ("Qué hacer estos días en Arrecife y en toda la isla", "Things to do in Arrecife and around the island"),
  "ag_all": ("Toda la agenda", "Full listings"),
- "cal_add": ("Añadir al calendario", "Add to calendar"), "cal_google": ("Google Calendar", "Google Calendar"), "hasta": ("Hasta el {d}", "Until {d}"),
+ "cal_add": ("Añadir al calendario", "Add to calendar"), "cal_google": ("Google Calendar", "Google Calendar"), "rango": ("Del {a} al {b}", "{a} – {b}"), "rango_mes": ("Del {a} al {b} de {m}", "{a}–{b} {m}"),
  "biz_k": ("Negocios de Arrecife", "Arrecife businesses"),
  "biz_h": ("Dónde comer, comprar y encontrar un profesional en la capital", "Where to eat, shop and find a professional in the capital"),
  "biz_p": ("Estamos preparando el directorio de comercios, bares, restaurantes y empresas de Arrecife. Aparecer será gratis.",
@@ -588,19 +588,26 @@ def story_card(n, L, variant="card", lede=True):
             f'<h3><a href="{L(R("noticia", n))}">{esc(F(n, "titulo"))}</a></h3>{lede_html}</div></article>')
 
 
-def date_block(d):
+def date_block(d, fin=None):
     lg = "en" if en() else "es"
+    hasta = (f'<span class="dblock-fin">→ {fin.day} {MESES_CORTOS[lg][fin.month - 1]}</span>' if fin and fin != d else "")
     return (f'<span class="dblock"><span class="dblock-wd">{DIAS[lg][d.weekday()][:3]}</span>'
-            f'<span class="dblock-d">{d.day}</span><span class="dblock-m">{MESES_CORTOS[lg][d.month - 1]}</span></span>')
+            f'<span class="dblock-d">{d.day}</span><span class="dblock-m">{MESES_CORTOS[lg][d.month - 1]}</span>{hasta}</span>')
+
+
+def ev_rango(e):
+    a, b = e["ini"], e["fin"]
+    if a.month == b.month and a.year == b.year:
+        return t("rango_mes", a=a.day, b=b.day, m=MESES["en" if en() else "es"][a.month - 1])
+    return t("rango", a=fecha_corta(a), b=fecha_corta(b))
 
 
 def ev_when(e):
-    return t("hasta", d=fecha_corta(e["fin"])) if e["fin"] != e["ini"] else F(e, "hora")
+    return ev_rango(e) if e["fin"] != e["ini"] else F(e, "hora")
 
 
 def ev_card(e, hoy):
-    d = max(e["ini"], hoy) if e["fin"] != e["ini"] else e["ini"]
-    return (f'<article class="evcard">{date_block(d)}<div class="evcard-txt">'
+    return (f'<article class="evcard">{date_block(e["ini"], e["fin"])}<div class="evcard-txt">'
             f'<p class="evcard-cat">{esc(cat_name(e.get("categoria", "Actos")))} · {esc(ev_when(e))}</p>'
             f'<h3>{esc(F(e, "titulo"))}</h3><p class="evcard-place">{esc(F(e, "lugar"))}, {esc(muni_name(e.get("municipio", "")))}</p>'
             f'</div></article>')
@@ -670,7 +677,7 @@ def evento_html(e, L):
     fuente = (f'<a href="{esc(e["fuente_url"])}" rel="noopener" target="_blank">{esc(e["fuente_nombre"])}</a>'
               if e.get("fuente_url") else "")
     return (f'<article class="ev" data-muni="{esc(slugify(e.get("municipio", "")))}" data-fin="{e["fin"].isoformat()}">'
-            f'{date_block(e["ini"] if e["fin"] == e["ini"] else e["fin"])}'
+            f'{date_block(e["ini"], e["fin"])}'
             f'<div class="ev-body"><p class="evcard-cat">{esc(cat_name(e.get("categoria", "Actos")))} · {esc(ev_when(e))}</p>'
             f'<h3>{esc(F(e, "titulo"))}</h3><p class="ev-place">{esc(F(e, "lugar"))} · '
             f'<a href="{L(R("municipio", e.get("municipio", "Toda la isla")))}">{esc(muni_name(e.get("municipio", "")))}</a></p>'
@@ -679,7 +686,16 @@ def evento_html(e, L):
             f'<p class="ev-cal"><a class="btn btn-ghost btn-sm" href="{L.file(ev_ics_path(e))}" download="{esc(e["slug"])}.ics">'
             f'<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>'
             f'<path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>{t("cal_add")}</a>'
-            f'<a class="ev-gcal" href="{esc(ev_google(e))}" rel="noopener" target="_blank">{t("cal_google")}</a></p></div></article>')
+            f'<a class="ev-gcal" href="{esc(ev_google(e))}" rel="noopener" target="_blank">{t("cal_google")}</a></p></div>'
+            f'{ev_foto(e, L)}</article>')
+
+
+def ev_foto(e, L):
+    if not e.get("imagen"):
+        return ""
+    credito = f'<figcaption>{esc(e["credito"])}</figcaption>' if e.get("credito") else ""
+    return (f'<figure class="ev-img"><img src="{L.file(e["imagen"])}" alt="{esc(F(e, "titulo"))}" loading="lazy">'
+            f'{credito}</figure>')
 
 
 def band(title, sub, inner, cls="", more=""):
