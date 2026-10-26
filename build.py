@@ -20,6 +20,7 @@ import math
 import random
 import re
 import shutil
+import subprocess
 import sys
 import unicodedata
 from datetime import date, datetime, timedelta, timezone
@@ -373,6 +374,7 @@ def load():
             "seccion": meta.get("seccion", "Actualidad"), "municipios": munis,
             "entradilla": meta.get("entradilla", ""), "entradilla_en": meta.get("entradilla_en", ""),
             "nivel": meta.get("nivel", ""), "icono": meta.get("icono", ""), "imagen": meta.get("imagen", ""), "credito": meta.get("credito", ""),
+            "actualizado": meta.get("actualizado", ""),
             "fuentes": fuentes, "parrafos": paras(es_body), "parrafos_en": paras(en_body),
         })
     noticias.sort(key=lambda n: (-n["fecha"].toordinal(), n["orden"]))
@@ -449,15 +451,92 @@ def cover_src(n, L):
 
 # ---------------------------------------------------------------- plantilla
 CSS = (ROOT / "assets" / "style.css").read_text(encoding="utf-8")
-FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
-         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
-         'family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500'
-         '&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..600&display=swap">')
+# Fuentes alojadas en la propia web (assets/fonts): más rápido y sin pedir nada a Google.
+FONTS_CSS = (ROOT / "assets" / "fonts" / "fonts.css").read_text(encoding="utf-8")
+FONTS_PRELOAD = ["archivo-normal-400-900-latin.woff2", "source-serif-4-normal-400-700-latin.woff2"]
 
 
-def page(*, title, path, alt, body, description="", og_type="website", extra_head="", fragment=False):
-    """path: ruta de esta página; alt: ruta equivalente en el otro idioma."""
+# ---------------------------------------------------------------- SEO: imágenes, logo y datos estructurados
+PNG = set()          # portadas que tienen versión PNG (slug)
+LOGO_PNG = [False]   # True si se ha podido generar img/logo-512.png
+SITEMAP = []         # (path, alt, lastmod) de cada página publicada
+
+
+def rasterize(svg_path, png_path, w, h):
+    """Convierte un SVG en PNG con rsvg-convert (o ImageMagick). Devuelve False si no hay herramienta."""
+    cmds = (["rsvg-convert", "-w", str(w), "-h", str(h), "-o", str(png_path), str(svg_path)],
+            ["convert", "-background", "none", "-density", "192", str(svg_path), "-resize", f"{w}x{h}!", str(png_path)])
+    for cmd in cmds:
+        if shutil.which(cmd[0]):
+            r = subprocess.run(cmd, capture_output=True)
+            if r.returncode == 0 and png_path.exists() and png_path.stat().st_size:
+                return True
+    return False
+
+
+def logo_svg():
+    """Logo cuadrado: verde de carpintería, aro claro y el velero de los pictogramas."""
+    s = 5.4
+    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
+            '<rect width="512" height="512" rx="96" fill="#17633f"/>'
+            '<circle cx="256" cy="256" r="196" fill="#fff" fill-opacity=".1" stroke="#fff" stroke-opacity=".35" stroke-width="6"/>'
+            f'<g transform="translate({256 - 32 * s:.1f} {256 - 32 * s:.1f}) scale({s})" fill="none" stroke="#fff" '
+            f'stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">{ICONOS["velero"]}</g></svg>')
+
+
+def abs_url(rel):
+    return f"{SITE_URL}/{rel}"
+
+
+def news_image(n):
+    """URL absoluta de la imagen de una noticia para Google y redes, y su tamaño si se conoce."""
+    if n["imagen"]:
+        return abs_url(n["imagen"]), None
+    if n["slug"] in PNG:
+        return abs_url(f"img/portadas/{n['slug']}.png"), (1200, 675)
+    return None, None
+
+
+def pub_dt(d):
+    """Hora de publicación de la edición (7:00 en Canarias, que en invierno es UTC)."""
+    return datetime(d.year, d.month, d.day, 7, 0, tzinfo=timezone.utc)
+
+
+def mod_date(n):
+    return n["actualizado"] or pub_dt(n["fecha"]).isoformat()
+
+
+def org_ld():
+    org = {"@type": "NewsMediaOrganization", "@id": f"{SITE_URL}/#org", "name": SITE_NAME, "url": f"{SITE_URL}/",
+           "publishingPrinciples": abs_url(R("linea", lang="es")), "areaServed": "Lanzarote y La Graciosa"}
+    if LOGO_PNG[0]:
+        org["logo"] = {"@type": "ImageObject", "url": abs_url("img/logo-512.png"), "width": 512, "height": 512}
+    return org
+
+
+def crumbs_ld(items):
+    return {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": i + 1, "name": name, "item": abs_url(path)}
+        for i, (name, path) in enumerate(items)]}
+
+
+def ld_tag(obj):
+    return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False).replace("</", "<\\/") + "</script>"
+
+
+def sec_crumbs(s):
+    """Portada › Grupo › Sección (el grupo solo si la sección pertenece a uno)."""
+    out = [(t("portada"), R("home"))]
+    if GRUPO_DE.get(s):
+        out.append((sec_name(GRUPO_DE[s]), R("seccion", GRUPO_DE[s])))
+    out.append((sec_name(s), R("seccion", s)))
+    return out
+
+
+def page(*, title, path, alt, body, description="", og_type="website", extra_head="", fragment=False,
+         image=None, image_size=None, crumbs=None, lastmod=None):
+    """path: ruta de esta página; alt: ruta equivalente en el otro idioma.
+    image: URL absoluta de la imagen para Google y redes; crumbs: [(nombre, ruta)] para la ruta de navegación."""
     L = Linker(path)
     lang = LANG[0]
     other = "es" if en() else "en"
@@ -466,6 +545,21 @@ def page(*, title, path, alt, body, description="", og_type="website", extra_hea
     nav = "".join(f'<a href="{L(R("seccion", s))}">{esc(sec_name(s))}</a>' for s in SECCIONES_NAV)
     fecha_top = esc(fecha_larga(HOY[0])) if HOY[0] else ""
     es_path, en_path = (alt, path) if en() else (path, alt)
+    if path != "404.html" and not PREVIEW:
+        SITEMAP.append((path, alt, lastmod))
+    if not image and LOGO_PNG[0]:
+        image, image_size = abs_url("img/logo-512.png"), (512, 512)
+    grande = image and image_size != (512, 512)
+    og_img = ""
+    if image:
+        og_img = f'<meta property="og:image" content="{esc(image)}"><meta name="twitter:image" content="{esc(image)}">'
+        if image_size:
+            og_img += f'<meta property="og:image:width" content="{image_size[0]}"><meta property="og:image:height" content="{image_size[1]}">'
+    if crumbs is None:
+        crumbs = [] if path in (R("home"), "404.html") else [(t("portada"), R("home")), (title, path)]
+    crumbs_tag = ld_tag(crumbs_ld(crumbs)) if len(crumbs) > 1 else ""
+    font_dir = L.file("assets/fonts/")
+    fonts = "".join(f'<link rel="preload" href="{font_dir}{f}" as="font" type="font/woff2" crossorigin>' for f in FONTS_PRELOAD)
     head = (
         f"<title>{esc(full_title)}</title>"
         '<meta name="claude:viewport-fit-sides" content="cover">'
@@ -478,9 +572,13 @@ def page(*, title, path, alt, body, description="", og_type="website", extra_hea
         f'<meta property="og:title" content="{esc(title)}">'
         f'<meta property="og:description" content="{esc(description or t("tagline"))}">'
         f'<meta property="og:type" content="{og_type}"><meta property="og:url" content="{esc(canonical)}">'
-        f'<meta property="og:locale" content="{"en_GB" if en() else "es_ES"}"><meta name="twitter:card" content="summary_large_image">'
+        f'<meta property="og:locale" content="{"en_GB" if en() else "es_ES"}">'
+        f'<meta name="twitter:card" content="{"summary_large_image" if grande else "summary"}">{og_img}'
+        '<meta name="robots" content="max-image-preview:large">'
+        f'<link rel="icon" href="{L.file("img/logo.svg")}" type="image/svg+xml">'
+        + (f'<link rel="apple-touch-icon" href="{L.file("img/apple-touch-icon.png")}">' if LOGO_PNG[0] else "") +
         f'<link rel="alternate" type="application/rss+xml" title="{SITE_NAME}" href="{SITE_URL}/{"en/" if en() else ""}feed.xml">'
-        f"{FONTS}<style>{CSS}</style>{extra_head}"
+        f"{fonts}<style>{FONTS_CSS.replace('{FONTS}', font_dir)}{CSS}</style>{crumbs_tag}{extra_head}"
     )
     munis_nav = "".join(f'<a href="{L(R("municipio", m))}">{esc(muni_name(m))}</a>' for m in MUNICIPIOS)
     lang_switch = (f'<span class="lang" role="group" aria-label="Idioma / Language">'
@@ -805,8 +903,14 @@ def build_home(noticias, dias, agenda, negocios):
         eds = band(t("ed_t"), t("ed_s"), f'<div class="edgrid">{filas}</div>', "band-eds",
                    f'<a class="band-more" href="{L(R("archivo"))}">{t("ed_all")}</a>')
     body = hero + mas + ay + tema + emp + red + cib + ag + eds + biz
+    img, size = news_image(lead)
+    ld = {"@context": "https://schema.org", "@graph": [
+        {"@type": "WebSite", "@id": f"{SITE_URL}/#website", "url": abs_url(R("home")), "name": SITE_NAME,
+         "description": t("tagline"), "inLanguage": LANG[0], "publisher": {"@id": f"{SITE_URL}/#org"}},
+        org_ld()]}
     return page(title=SITE_NAME, path=path, alt=alt, body=body,
-                description=f"{fecha_corta(hoy)}: {F(lead, 'titulo')}", fragment=PREVIEW and not en())
+                description=f"{fecha_corta(hoy)}: {F(lead, 'titulo')}", fragment=PREVIEW and not en(),
+                image=img, image_size=size, extra_head=ld_tag(ld), lastmod=pub_dt(hoy).isoformat())
 
 
 # ---------------------------------------------------------------- noticia
@@ -837,10 +941,15 @@ def build_noticia(n, noticias, agenda):
     alerta = (f'<p class="alert-level alert-inline"><span class="dot"></span>{t("nivel", x=nivel_name(n["nivel"]))}</p>'
               if n["nivel"] else "")
     credito = f'<figcaption>{esc(n["credito"])}</figcaption>' if n["credito"] else ""
+    img, size = news_image(n)
     ld = {"@context": "https://schema.org", "@type": "NewsArticle", "headline": F(n, "titulo"),
-          "description": F(n, "entradilla"), "datePublished": n["fecha"].isoformat(), "inLanguage": LANG[0],
-          "publisher": {"@type": "Organization", "name": SITE_NAME, "url": SITE_URL},
-          "mainEntityOfPage": share_url, "isBasedOn": [f["url"] for f in n["fuentes"]]}
+          "description": F(n, "entradilla"), "datePublished": pub_dt(n["fecha"]).isoformat(),
+          "dateModified": mod_date(n), "inLanguage": LANG[0], "articleSection": sec_name(n["seccion"]),
+          "contentLocation": [{"@type": "Place", "name": f"{m}, Lanzarote"} for m in n["municipios"]],
+          "author": {"@type": "Organization", "name": SITE_NAME, "url": abs_url(R("sobre"))},
+          "publisher": org_ld(), "mainEntityOfPage": share_url, "isBasedOn": [f["url"] for f in n["fuentes"]]}
+    if img:
+        ld["image"] = [img]
     body = f"""
 <div class="wrap">
   <nav class="crumbs" aria-label="{t('ruta')}"><a href="{L(R('home'))}">{t('portada')}</a> / <a href="{L(R('seccion', n['seccion']))}">{esc(sec_name(n['seccion']))}</a> / <span>{ruta}</span></nav>
@@ -877,9 +986,13 @@ b.addEventListener('click',function(){{var u=b.getAttribute('data-url');
 function ok(){{s.textContent=b.getAttribute('data-ok');}}function no(){{s.textContent=u;}}
 try{{navigator.clipboard.writeText(u).then(ok,no);}}catch(e){{no();}}}});}})();
 </script>"""
-    extra = f'<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>'
+    extra = (ld_tag(ld) + f'<meta property="article:published_time" content="{pub_dt(n["fecha"]).isoformat()}">'
+             f'<meta property="article:modified_time" content="{esc(mod_date(n))}">'
+             f'<meta property="article:section" content="{esc(sec_name(n["seccion"]))}">')
     return page(title=F(n, "titulo"), path=path, alt=alt, body=body,
-                description=F(n, "entradilla"), og_type="article", extra_head=extra)
+                description=F(n, "entradilla"), og_type="article", extra_head=extra,
+                image=img, image_size=size, crumbs=sec_crumbs(n["seccion"]) + [(F(n, "titulo"), path)],
+                lastmod=mod_date(n))
 
 
 # ---------------------------------------------------------------- listados
@@ -900,8 +1013,11 @@ def subnav(grupo, actual, L):
 
 
 def build_lista(titulo, eyebrow, items, path, alt, intro="", color="", prev_d=None, next_d=None, layout="grid",
-                grupo=None, actual=None):
+                grupo=None, actual=None, crumbs=None):
     L = Linker(path)
+    img, size = news_image(items[0]) if items else (None, None)
+    seo = dict(image=img, image_size=size, crumbs=crumbs,
+               lastmod=max(mod_date(n) for n in items) if items else None)
     nav = ""
     if prev_d or next_d:
         nav = ('<nav class="daynav">'
@@ -927,7 +1043,7 @@ def build_lista(titulo, eyebrow, items, path, alt, intro="", color="", prev_d=No
         body = (page_head(eyebrow, titulo, esc(intro), color)
                 + (subnav(grupo, actual, L) if grupo else "")
                 + f'<div class="wrap list-wrap feed-grid"><div class="feed">{filas}{vacio}</div>{aside}</div>')
-        return page(title=titulo, path=path, alt=alt, body=body, description=f"{titulo} · {SITE_NAME}")
+        return page(title=titulo, path=path, alt=alt, body=body, description=f"{titulo} · {SITE_NAME}", **seo)
     grupos = {}
     for n in items:
         grupos.setdefault(n["fecha"], []).append(n)
@@ -937,7 +1053,7 @@ def build_lista(titulo, eyebrow, items, path, alt, intro="", color="", prev_d=No
         for d in sorted(grupos, reverse=True))
     vacio = f'<p class="empty">{t("vacio")}</p>' if not items else ""
     body = page_head(eyebrow, titulo, esc(intro), color) + f'<div class="wrap list-wrap">{nav}{bloques}{vacio}{nav}</div>'
-    return page(title=titulo, path=path, alt=alt, body=body, description=f"{titulo} · {SITE_NAME}")
+    return page(title=titulo, path=path, alt=alt, body=body, description=f"{titulo} · {SITE_NAME}", **seo)
 
 
 def build_archivo(noticias):
@@ -976,7 +1092,7 @@ var res=D.filter(function(x){{var h=norm(x.t+' '+x.e+' '+x.s+' '+x.m);return w.e
 n.textContent=w.length?(res.length+(res.length===1?S.one:S.many)):S.last.replace('{{n}}',Math.min(res.length,12));
 r.innerHTML=res.slice(0,w.length?60:12).map(function(x){{return '<article class="card"><a class="fig" href="'+x.u+'" tabindex="-1" aria-hidden="true"><img src="'+x.i+'" alt="" loading="lazy"><span class="fig-place">'+e(x.m.split(' · ')[0])+'</span></a><div class="txt"><div class="meta-row"><span class="kicker">'+e(x.s)+'</span><span class="where">'+e(x.f)+'</span></div><h3><a href="'+x.u+'">'+e(x.t)+'</a></h3><p class="lede">'+e(x.e)+'</p></div></article>';}}).join('');}}
 document.getElementById('f').addEventListener('submit',function(ev){{ev.preventDefault();run();}});
-q.addEventListener('input',run);run();}})();
+q.addEventListener('input',run);try{{var p=new URLSearchParams(location.search).get('q');if(p)q.value=p;}}catch(e){{}}run();}})();
 </script>"""
     return page(title=t("buscar"), path=path, alt=alt, body=body)
 
@@ -1051,20 +1167,53 @@ def build_404():
     body = page_head("Error 404", "Esta página no existe · Page not found",
                      'Puede que el enlace esté mal escrito o que la noticia se haya movido. <a href="/">Vuelve a la portada</a>. '
                      '· The link may be wrong or the story may have moved. <a href="/en/">Go to the English home page</a>.')
-    return page(title="404", path="404.html", alt="404.html", body=body, extra_head='<base href="/">')
+    return page(title="404", path="404.html", alt="404.html", body=body,
+                extra_head='<base href="/"><meta name="robots" content="noindex">')
 
 
 def build_feed(noticias):
     items = []
     for n in noticias[:50]:
         link = f"{SITE_URL}/{R('noticia', n)}"
-        pub = datetime(n["fecha"].year, n["fecha"].month, n["fecha"].day, 7, 0, tzinfo=timezone.utc)
+        pub = pub_dt(n["fecha"])
         items.append(f"<item><title>{esc(F(n, 'titulo'))}</title><link>{link}</link><guid>{link}</guid>"
                      f"<pubDate>{pub.strftime('%a, %d %b %Y %H:%M:%S +0000')}</pubDate>"
                      f"<category>{esc(sec_name(n['seccion']))}</category><description>{esc(F(n, 'entradilla'))}</description></item>")
     return ('<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel>'
             f"<title>{SITE_NAME}</title><link>{SITE_URL}/{R('home')}</link><description>{esc(t('tagline'))}</description>"
             f"<language>{LANG[0]}</language>{''.join(items)}</channel></rss>")
+
+
+def build_sitemap():
+    """Todas las páginas, con fecha de actualización y su equivalente en el otro idioma."""
+    urls = []
+    for path, alt, lastmod in SITEMAP:
+        es_p, en_p = (alt, path) if path.startswith("en/") else (path, alt)
+        mod = f"<lastmod>{esc(lastmod)}</lastmod>" if lastmod else ""
+        urls.append(f"<url><loc>{abs_url(path)}</loc>{mod}"
+                    f'<xhtml:link rel="alternate" hreflang="es" href="{abs_url(es_p)}"/>'
+                    f'<xhtml:link rel="alternate" hreflang="en" href="{abs_url(en_p)}"/>'
+                    f'<xhtml:link rel="alternate" hreflang="x-default" href="{abs_url(es_p)}"/></url>')
+    return ('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+            f'xmlns:xhtml="http://www.w3.org/1999/xhtml">{"".join(urls)}</urlset>')
+
+
+def build_news_sitemap(noticias):
+    """Mapa de Google News: solo las noticias de las últimas 48 horas, en los dos idiomas."""
+    limite = datetime.now(timezone.utc) - timedelta(hours=48)
+    urls = []
+    for n in noticias:
+        if pub_dt(n["fecha"]) < limite:
+            continue
+        for lang in LANGS:
+            LANG[0] = lang
+            urls.append(f"<url><loc>{abs_url(R('noticia', n))}</loc><news:news><news:publication>"
+                        f"<news:name>{SITE_NAME}</news:name><news:language>{lang}</news:language></news:publication>"
+                        f"<news:publication_date>{pub_dt(n['fecha']).isoformat()}</news:publication_date>"
+                        f"<news:title>{esc(F(n, 'titulo'))}</news:title></news:news></url>")
+    LANG[0] = "es"
+    return ('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+            f'xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">{"".join(urls)}</urlset>')
 
 
 # ---------------------------------------------------------------- principal
@@ -1095,13 +1244,15 @@ def build_lang(noticias, dias, agenda, negocios, hoy):
         grupo = GRUPO_DE.get(s)
         put(R("seccion", s), build_lista(sec_name(s), sec_name(grupo) if grupo else t("sec_eb"), items,
                                          R("seccion", s), R("seccion", s, lang=other),
-                                         color=COLOR_SECCION.get(s, ""), layout="feed", grupo=grupo, actual=s))
+                                         color=COLOR_SECCION.get(s, ""), layout="feed", grupo=grupo, actual=s,
+                                         crumbs=sec_crumbs(s)))
     for g in SECCIONES_NAV:
         if g not in GRUPOS:
             continue
         items = [n for n in noticias if GRUPO_DE.get(n["seccion"]) == g]
         put(R("seccion", g), build_lista(sec_name(g), t("sec_eb"), items, R("seccion", g), R("seccion", g, lang=other),
-                                         color=COLOR_SECCION.get(g, ""), layout="feed", grupo=g, actual=g))
+                                         color=COLOR_SECCION.get(g, ""), layout="feed", grupo=g, actual=g,
+                                         crumbs=sec_crumbs(g)))
     for m in MUNICIPIOS:
         items = [n for n in noticias if m in n["municipios"]]
         intro = t("toda_intro") if m == "Toda la isla" else t("muni_intro", m=m)
@@ -1112,7 +1263,9 @@ def build_lang(noticias, dias, agenda, negocios, hoy):
         put(R("dia", d), build_lista(fecha_larga(d), t("dia_eb"), items, R("dia", d), R("dia", d, lang=other),
                                      F(dias.get(d, {}), "tema"),
                                      prev_d=fechas[i - 1] if i > 0 else None,
-                                     next_d=fechas[i + 1] if i + 1 < len(fechas) else None))
+                                     next_d=fechas[i + 1] if i + 1 < len(fechas) else None,
+                                     crumbs=[(t("portada"), R("home")), (t("archivo"), R("archivo")),
+                                             (fecha_larga(d), R("dia", d))]))
     put(R("archivo"), build_archivo(noticias))
     put(R("buscar"), build_buscar(noticias))
     put(R("sobre"), build_sobre())
@@ -1145,6 +1298,17 @@ def main():
                                                                 n["icono"] or ICONO_SECCION.get(n["seccion"], "edificio")))
     if (ROOT / "img").exists():
         shutil.copytree(ROOT / "img", OUT / "img", dirs_exist_ok=True)
+    shutil.copytree(ROOT / "assets" / "fonts", OUT / "assets" / "fonts", ignore=shutil.ignore_patterns("*.css"))
+    write("img/logo.svg", logo_svg())
+    if not PREVIEW:
+        # PNG de 1200 px para Google Discover, WhatsApp y Facebook, que no usan SVG
+        PNG.update(n["slug"] for n in noticias if not n["imagen"] and rasterize(
+            OUT / f"img/portadas/{n['slug']}.svg", OUT / f"img/portadas/{n['slug']}.png", 1200, 675))
+        LOGO_PNG[0] = (rasterize(OUT / "img/logo.svg", OUT / "img/logo-512.png", 512, 512)
+                       and rasterize(OUT / "img/logo.svg", OUT / "img/apple-touch-icon.png", 180, 180))
+        sin_png = sum(1 for n in noticias if not n["imagen"]) - len(PNG)
+        if sin_png:
+            print(f"AVISO: {sin_png} portadas sin PNG (instala rsvg-convert: apt-get install librsvg2-bin)")
 
     paths = []
     for lang in LANGS:
@@ -1153,9 +1317,9 @@ def main():
     LANG[0] = "es"
     if not PREVIEW:
         write("404.html", build_404())
-        urls = "".join(f"<url><loc>{SITE_URL}/{p}</loc></url>" for p in paths)
-        write("sitemap.xml", f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>')
-        write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n")
+        write("sitemap.xml", build_sitemap())
+        write("news-sitemap.xml", build_news_sitemap(noticias))
+        write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\nSitemap: {SITE_URL}/news-sitemap.xml\n")
         write("CNAME", "guiadearrecife.es\n")
         write(".nojekyll", "")
     print(f"OK: {len(noticias)} noticias, {len(paths)} páginas ({', '.join(LANGS)}) en {OUT}")

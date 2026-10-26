@@ -18,6 +18,13 @@ Portal de noticias de Lanzarote y La Graciosa (guiadearrecife.es), en español e
 - `content/negocios/*.md` — fichas del directorio de Arrecife.
 - `docs/linea-editorial.md` — la línea editorial que aplica la tarea.
 
+## SEO
+- Cada portada se publica en SVG y en PNG de 1200×675 (Google Discover, WhatsApp y Facebook no usan SVG). El PNG lo genera `build.py` con `rsvg-convert` (paquete `librsvg2-bin`, lo instala el workflow).
+- Datos estructurados: `NewsArticle` (con imagen, fechas y logo del medio), `WebSite` y `NewsMediaOrganization` en la portada y `BreadcrumbList` en todas las páginas.
+- `sitemap.xml` con fecha de actualización e idiomas, y `news-sitemap.xml` con las noticias de las últimas 48 horas para Google News.
+- Si una noticia se corrige después de publicarla, añade `actualizado: AAAA-MM-DDTHH:MM:SS+00:00` en su cabecera.
+- Las fuentes de letra están en `assets/fonts/` (no se cargan desde Google).
+
 ## Probar en local
 ```
 python3 scripts/validar.py && python3 build.py && python3 -m http.server -d _site

@@ -21,6 +21,8 @@ jobs:
           python-version: "3.12"
       - name: Validar contenido
         run: python3 scripts/validar.py
+      - name: Instalar rsvg-convert (portadas en PNG para Google y redes)
+        run: sudo apt-get update -q && sudo apt-get install -y -q librsvg2-bin
       - name: Generar web
         run: python3 build.py
       - uses: actions/upload-pages-artifact@v3
