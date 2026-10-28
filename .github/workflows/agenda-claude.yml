@@ -1,0 +1,43 @@
+name: Actualizar agenda (Claude)
+# Cada día Claude revisa las fuentes oficiales, añade los actos nuevos y corrige fechas
+# siguiendo docs/tarea-agenda.md. Después se ponen las fotos y se publica.
+# Necesita el secreto ANTHROPIC_API_KEY (Settings > Secrets and variables > Actions).
+on:
+  schedule:
+    - cron: "23 5 * * *"   # 5:23 UTC (6:23 en Canarias en verano, 5:23 en invierno)
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  id-token: write
+concurrency:
+  group: agenda
+  cancel-in-progress: false
+jobs:
+  agenda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar rsvg-convert (lo usa build.py)
+        run: sudo apt-get update -q && sudo apt-get install -y -q librsvg2-bin
+      - name: Claude actualiza la agenda
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Lee docs/tarea-agenda.md y haz exactamente lo que dice. HOY es la fecha de
+            `TZ=Atlantic/Canary date +%F`. No hagas commits ni push: lo hace el flujo después.
+          claude_args: >-
+            --max-turns 200
+            --allowedTools "Read,Write,Edit,Glob,Grep,WebSearch,WebFetch,Bash(curl:*),Bash(file:*),Bash(ls:*),Bash(date:*),Bash(stat:*),Bash(python3 scripts/validar.py:*),Bash(python3 scripts/fotos_agenda.py:*),Bash(python3 build.py:*)"
+      - name: Fotos que falten
+        run: python3 scripts/fotos_agenda.py
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: 'bash scripts/publicar_agenda.sh "Agenda: actualización del $(TZ=Atlantic/Canary date +%F)"'

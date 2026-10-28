@@ -1,0 +1,30 @@
+name: Fotos de la agenda
+# Cada día descarga la foto o cartel oficial de los actos que aún no la tienen.
+# No usa IA ni necesita claves: solo scripts/fotos_agenda.py.
+on:
+  schedule:
+    - cron: "13 7 * * *"   # 7:13 UTC (8:13 en Canarias en verano, 7:13 en invierno)
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+concurrency:
+  group: agenda
+  cancel-in-progress: false
+jobs:
+  fotos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar rsvg-convert (lo usa build.py)
+        run: sudo apt-get update -q && sudo apt-get install -y -q librsvg2-bin
+      - name: Descargar fotos
+        run: python3 scripts/fotos_agenda.py
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: 'bash scripts/publicar_agenda.sh "Agenda: fotos de los actos"'
