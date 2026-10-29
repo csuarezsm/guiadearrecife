@@ -13,4 +13,6 @@ precio_en: Free
 descripcion: Documental sobre once personas anónimas que cruzaron el Atlántico, con charla posterior con su director.
 descripcion_en: Documentary about eleven ordinary people who crossed the Atlantic, followed by a talk with the director.
 fuente: CACT Lanzarote | https://cactlanzarote.com/es/eventos/cascara-de-nuez
+imagen: img/agenda/2026-10-29-cascara-de-nuez-tobias.jpg
+credito: Foto: CACT Lanzarote
 ---

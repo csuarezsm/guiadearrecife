@@ -13,4 +13,6 @@ precio_en: Free
 descripcion: Recorrido teatral de Actúa Teatro por leyendas y tradiciones canarias ligadas a los difuntos, para todos los públicos.
 descripcion_en: Actúa Teatro's walking performance through Canarian legends and customs about the dead, for all ages.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/noche-de-finados/
+imagen: img/agenda/2026-10-30-noche-de-finados-haria.jpg
+credito: Foto: Cultura Lanzarote
 ---

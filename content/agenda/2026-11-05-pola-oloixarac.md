@@ -13,4 +13,6 @@ precio_en: Free, register at fdll.es
 descripcion: La escritora argentina habla de identidad, deseo y ficción en tiempos de internet e inteligencia artificial.
 descripcion_en: The Argentine author on identity, desire and fiction in the age of the internet and AI.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/festival-de-literatura-de-lanzarote-pola-oloixarac/
+imagen: img/agenda/2026-11-05-pola-oloixarac.jpg
+credito: Foto: Cultura Lanzarote
 ---

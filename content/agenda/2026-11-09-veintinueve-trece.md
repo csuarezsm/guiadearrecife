@@ -14,4 +14,6 @@ precio_en: Opening and screening free; talks €20
 descripcion: Undécima edición del encuentro de fotografía y artes visuales, con conferencias, taller y la Fiesta de la Fotografía en la plaza de El Almacén el día 14.
 descripcion_en: Eleventh edition of the photography and visual arts meeting, with talks, a workshop and a Photography Party in El Almacén square on the 14th.
 fuente: Veintinueve Trece | https://www.veintinuevetrece.com
+imagen: img/agenda/2026-11-09-veintinueve-trece.png
+credito: Foto: veintinuevetrece.com
 ---
