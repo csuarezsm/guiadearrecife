@@ -14,4 +14,6 @@ precio_en: Free
 descripcion: Fotografías y vídeos nocturnos de los jardines de un barrio de Las Palmas, con palmeras y dragos bajo las farolas. Hasta el 16 de enero.
 descripcion_en: Night photographs and videos of gardens in a Las Palmas neighbourhood, palms and dragon trees under streetlights. Until 16 January.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/wild-palms-german-paez/
+imagen: img/agenda/2026-10-08-wild-palms-german-paez.jpg
+credito: Foto: Cultura Lanzarote
 ---

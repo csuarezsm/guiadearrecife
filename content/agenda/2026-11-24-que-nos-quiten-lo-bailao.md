@@ -14,4 +14,6 @@ precio_en: TBC
 descripcion: Taller de danza de 10:00 a 12:30 en el Islote de Fermina, hasta el 19 de diciembre.
 descripcion_en: Dance workshop from 10am to 12.30pm at Islote de Fermina, until 19 December.
 fuente: CACT Lanzarote | https://cactlanzarote.com/es/eventos/que-nos-quiten-lo-bailao
+imagen: img/agenda/2026-11-24-que-nos-quiten-lo-bailao.jpg
+credito: Foto: CACT Lanzarote
 ---

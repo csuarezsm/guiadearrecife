@@ -14,4 +14,6 @@ precio_en: Free
 descripcion: Videoperformance que abre el ciclo de videocreación «La carne que mira». Hasta el 16 de enero.
 descripcion_en: Video performance opening the 'La carne que mira' video art season. Until 16 January.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/cleaning-the-mirror-ii/
+imagen: img/agenda/2026-10-08-cleaning-the-mirror-abramovic.jpg
+credito: Foto: Cultura Lanzarote
 ---

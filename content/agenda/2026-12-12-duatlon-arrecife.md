@@ -13,4 +13,6 @@ precio_en: €5 to €35 (entries close 7 December)
 descripcion: Duatlón corto por las calles de la capital. La fecha figura aún como provisional en algún calendario.
 descripcion_en: Short duathlon through the capital's streets. Some calendars still list the date as provisional.
 fuente: Fecantri | https://inscripciones.fecantri.org/es/evento/ii-duatlon-supersprint-ciudad-de-arrecife_
+imagen: img/agenda/2026-12-12-duatlon-arrecife.jpg
+credito: Foto: inscripciones.fecantri.org
 ---
