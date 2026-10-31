@@ -13,4 +13,6 @@ precio_en: €3
 descripcion: Doble sesión de Concha de Ganzo: «Las horas ciegas de César Manrique» y «José Gopar, el artista vencido», con coloquio.
 descripcion_en: Double bill by Concha de Ganzo about two Lanzarote artists, followed by a Q&A.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/las-horas-ciegas-de-cesar-manrique-y-jose-gopar-el-artista-vencido/
+imagen: img/agenda/2026-11-05-horas-ciegas-manrique-gopar.jpg
+credito: Foto: Cultura Lanzarote
 ---

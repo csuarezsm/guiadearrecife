@@ -14,4 +14,6 @@ precio_en: TBC
 descripcion: Edición dedicada a los pueblos como lugares de convivencia y memoria. El programa aún no está publicado.
 descripcion_en: This year's theme is villages as places of community and memory. Programme not yet published.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/muestra-de-cine-de-lanzarote-2026/
+imagen: img/agenda/2026-11-19-muestra-de-cine-lanzarote.jpg
+credito: Foto: Cultura Lanzarote
 ---

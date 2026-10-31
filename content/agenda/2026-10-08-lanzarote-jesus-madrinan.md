@@ -14,4 +14,6 @@ precio_en: Free
 descripcion: Retratos de gran formato de personas migrantes y turistas, junto a bodegones hechos con materiales de la isla y residuos del turismo. Hasta el 16 de enero.
 descripcion_en: Large-format portraits of migrants and tourists alongside still lifes made from island materials and tourist waste. Until 16 January.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/jesus-madrinan/
+imagen: img/agenda/2026-10-08-lanzarote-jesus-madrinan.jpg
+credito: Foto: Cultura Lanzarote
 ---

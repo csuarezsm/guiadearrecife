@@ -14,4 +14,6 @@ precio_en: TBC
 descripcion: Cinco documentales internacionales sobre el océano, con interpretación en lengua de signos. Lanzarote cierra la gira nacional con dos sesiones.
 descripcion_en: Five international ocean documentaries with sign-language interpretation. Lanzarote closes the national tour with two screenings.
 fuente: Cooltura Lanzarote | https://coolturalanzarote.com/articles/el-international-ocean-film-tour-llega-a-lanzarote-con-cinco-documentales-sobre-el-oceano
+imagen: img/agenda/2026-10-30-ocean-film-tour-jameos.jpg
+credito: Foto: Cooltura Lanzarote
 ---

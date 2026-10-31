@@ -14,4 +14,6 @@ precio_en: Free
 descripcion: Recorrido por los 30 años del disco de la cantante lanzaroteña con fotos, objetos e instrumentos. Abierta hasta el 14 de noviembre.
 descripcion_en: A walk through 30 years of the Lanzarote singer's album, with photos, objects and instruments. Open until 14 November.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/salas-de-arte-by-rosana/
+imagen: img/agenda/2026-10-25-exposicion-rosana-lunas-rotas.jpg
+credito: Foto: Cultura Lanzarote
 ---
