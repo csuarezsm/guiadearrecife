@@ -13,4 +13,6 @@ precio_en: Free, booking required
 descripcion: Charla para familias sobre educación afectivo-sexual y el acceso de los menores a la pornografía.
 descripcion_en: Talk for families on relationships and sex education and children's access to pornography.
 fuente: Ocio Lanzarote | https://ociolanzarote.com/agenda-cultural-lanzarote-noviembre-2026
+imagen: img/agenda/2026-11-07-lanzarote-en-familia-marroqui.jpg
+credito: Foto: OcioLanzarote
 ---
