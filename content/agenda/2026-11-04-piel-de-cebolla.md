@@ -13,4 +13,6 @@ precio_en: Free
 descripcion: Conversación sobre la reedición de la novela, que trata la memoria y la relación entre madre e hija.
 descripcion_en: Conversation about the reissued novel on memory and the mother-daughter bond.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/piel-de-cebolla-de-nieves-rodriguez-rivera/
+imagen: img/agenda/2026-11-04-piel-de-cebolla.jpg
+credito: Foto: Cultura Lanzarote
 ---
