@@ -14,4 +14,6 @@ precio_en: Free
 descripcion: Proyecto sobre la identidad de la isla a partir de su archivo digital y del Atlas Mnemosyne de Warburg. Hasta el 16 de enero.
 descripcion_en: A project on island identity drawing on its digital archive and Warburg's Mnemosyne Atlas. Until 16 January.
 fuente: Cultura Lanzarote | https://culturalanzarote.com/eventos/atlas-lanzarote-de-maria-rosa-aranega/
+imagen: img/agenda/2026-10-08-atlas-lanzarote-aranega.jpg
+credito: Foto: Cultura Lanzarote
 ---
