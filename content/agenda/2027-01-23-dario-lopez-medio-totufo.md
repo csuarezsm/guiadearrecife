@@ -13,4 +13,6 @@ precio_en: From €25
 descripcion: Monólogo que cierra el Festival Internacional de Humor Jameos.
 descripcion_en: Stand-up show closing the Jameos International Comedy Festival.
 fuente: Cooltura Lanzarote | https://coolturalanzarote.com/eventos/dario-lopez-medio-totufo-jameos
+imagen: img/agenda/2027-01-23-dario-lopez-medio-totufo.jpg
+credito: Foto: Cooltura Lanzarote
 ---
