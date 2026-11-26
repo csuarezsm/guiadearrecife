@@ -14,4 +14,6 @@ precio_en: Free
 descripcion: Mercado de cada domingo, de 9:00 a 14:00, con artesanía, cerámica, quesos, vinos y mojos.
 descripcion_en: Every Sunday market, 9am to 2pm, with crafts, pottery, cheeses, wines and mojo sauces.
 fuente: Cooltura Lanzarote | https://coolturalanzarote.com/eventos/mercado-artesanal-teguise
+imagen: img/agenda/2026-10-25-mercado-artesanal-teguise.jpg
+credito: Foto: Cooltura Lanzarote
 ---

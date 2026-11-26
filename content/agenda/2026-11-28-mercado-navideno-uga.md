@@ -14,4 +14,6 @@ precio_en: Free entry
 descripcion: Mercadillo de Navidad con 25 puestos; el sábado de 9:00 a 20:00 y el domingo de 9:00 a 15:00.
 descripcion_en: Christmas market with 25 stalls; Saturday 9am-8pm, Sunday 9am-3pm.
 fuente: Ayuntamiento de Yaiza | https://yaiza.es/anuncio-puestos-mercado-de-uga-dinamizacion-navidena/
+imagen: img/agenda/2026-11-28-mercado-navideno-uga.webp
+credito: Foto: Ayuntamiento de Yaiza
 ---
