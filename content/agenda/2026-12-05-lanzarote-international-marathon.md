@@ -13,4 +13,6 @@ precio_en: €20 to €85
 descripcion: Maratón, media, 10 km, 5 km de Papá Noel y carrera infantil, con meta en Costa Teguise.
 descripcion_en: Marathon, half, 10km, Santa 5km and kids' race, finishing in Costa Teguise.
 fuente: Rockthesport | https://web.rockthesport.com/en/event/lanzaroteinternationalmarathon2026
+imagen: img/agenda/2026-12-05-lanzarote-international-marathon.png
+credito: Foto: Rockthesport
 ---
